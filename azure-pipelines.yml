@@ -1,17 +1,35 @@
 # ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+# CI pipeline with Build and Deploy stages
 
 trigger:
 - master
 
+# This pool and variables apply to all stages
 pool:
   vmImage: ubuntu-latest
 
 variables:
   buildConfiguration: 'Release'
 
-steps:
-- script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration)'
+stages:
+# ---------------- BUILD STAGE ----------------
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: BuildJob
+    displayName: 'Build the app'
+    steps:
+    - script: dotnet build --configuration $(buildConfiguration)
+      displayName: 'dotnet build $(buildConfiguration)'
+
+# ---------------- DEPLOY STAGE ----------------
+- stage: Deploy
+  displayName: 'Deploy Stage'
+  dependsOn: Build
+  condition: succeeded()   # Run only if Build succeeded
+  jobs:
+  - job: DeployJob
+    displayName: 'Dummy deploy'
+    steps:
+    - script: echo "Deploying application... (add real deploy steps here)"
+      displayName: 'Deploy step'
